@@ -36,6 +36,20 @@ const Register = () => {
     setPasswordError(validatePassword(val));
   };
 
+  const parseRegError = (err) => {
+    const code = err?.code || '';
+    if (code.includes('email-already-in-use')) {
+      return 'This email is already registered! Please click Login instead.';
+    }
+    if (code.includes('invalid-email')) {
+      return 'Please enter a valid email address.';
+    }
+    if (code.includes('weak-password')) {
+      return 'Password is too weak. Please include uppercase, lowercase & 6+ chars.';
+    }
+    return err?.message?.replace('Firebase: ', '') || 'Registration failed.';
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     const errorMsg = validatePassword(password);
@@ -53,7 +67,7 @@ const Register = () => {
       navigate('/login');
     } catch (error) {
       console.error('Registration Error:', error);
-      toast.error(error.message || 'Registration failed.');
+      toast.error(parseRegError(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -66,7 +80,7 @@ const Register = () => {
       navigate('/');
     } catch (error) {
       console.error('Google Sign-in Error:', error);
-      toast.error(error.message || 'Google authentication failed');
+      toast.error(parseRegError(error));
     }
   };
 

@@ -14,6 +14,17 @@ const Login = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
 
+  const parseFirebaseError = (err) => {
+    const code = err?.code || '';
+    if (code.includes('invalid-credential') || code.includes('user-not-found') || code.includes('wrong-password')) {
+      return 'Invalid email or password. If you do not have an account yet, please click Register below to create one!';
+    }
+    if (code.includes('too-many-requests')) {
+      return 'Too many failed attempts. Please wait a moment and try again.';
+    }
+    return err?.message?.replace('Firebase: ', '') || 'Login failed. Please check credentials.';
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -24,7 +35,7 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error.message || 'Login failed. Please check credentials.');
+      toast.error(parseFirebaseError(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -37,21 +48,8 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (error) {
       console.error('Google login error:', error);
-      toast.error(error.message || 'Google Sign-In failed.');
+      toast.error(parseFirebaseError(error));
     }
-  };
-
-  // Demo Login Quick-Fill
-  const handleQuickDemoLogin = () => {
-    const demoUser = {
-      uid: 'demo-user-12345',
-      email: 'demo@drivefleet.com',
-      displayName: 'DriveFleet Member',
-      photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
-    };
-    setDemoUser(demoUser);
-    toast.success('Signed in with Demo Account!');
-    navigate(from, { replace: true });
   };
 
   return (
@@ -69,21 +67,6 @@ const Login = () => {
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Sign in to access your bookings and vehicle listings
           </p>
-        </div>
-
-        {/* Quick Demo Credentials Banner */}
-        <div className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800 flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-2 text-blue-700 dark:text-blue-300">
-            <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>Instant Examiner Demo Access</span>
-          </div>
-          <button
-            onClick={handleQuickDemoLogin}
-            type="button"
-            className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors"
-          >
-            One-Click Login
-          </button>
         </div>
 
         {/* Login Form */}
