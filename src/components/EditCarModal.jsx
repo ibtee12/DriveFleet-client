@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Edit3, Image, DollarSign, MapPin, Tag, Users, FileText } from 'lucide-react';
+import { X, Edit3, Image, DollarSign, MapPin, Tag, Users, FileText, Upload, Link as LinkIcon } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const EditCarModal = ({ car, isOpen, onClose, onUpdateSuccess }) => {
+  const [imageMode, setImageMode] = useState('url');
   const [formData, setFormData] = useState({
     carModel: '',
     rentalPrice: '',
@@ -17,6 +18,22 @@ const EditCarModal = ({ car, isOpen, onClose, onUpdateSuccess }) => {
     availability: 'Available'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be under 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, imageUrl: reader.result }));
+        toast.success('New image loaded from device!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     if (car) {
@@ -194,19 +211,66 @@ const EditCarModal = ({ car, isOpen, onClose, onUpdateSuccess }) => {
             />
           </div>
 
-          {/* Image URL */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-              Image URL
-            </label>
-            <input
-              type="url"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-semibold"
-            />
+          {/* Image Input Selection */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Vehicle Image
+              </label>
+              <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setImageMode('url')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                    imageMode === 'url' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  <LinkIcon className="w-3 h-3" />
+                  <span>Paste URL</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageMode('file')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 ${
+                    imageMode === 'file' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400'
+                  }`}
+                >
+                  <Upload className="w-3 h-3" />
+                  <span>Upload Device</span>
+                </button>
+              </div>
+            </div>
+
+            {imageMode === 'url' ? (
+              <input
+                type="url"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleChange}
+                required={!formData.imageUrl}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-semibold"
+              />
+            ) : (
+              <div className="relative border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-4 text-center hover:border-blue-500 transition-colors bg-slate-50/50 dark:bg-slate-950/50">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <Upload className="w-6 h-6 text-blue-500 mx-auto mb-1" />
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  Click to select new image from device
+                </p>
+              </div>
+            )}
+
+            {/* Live Image Preview */}
+            {formData.imageUrl && (
+              <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 mt-2 bg-slate-100 dark:bg-slate-800">
+                <img src={formData.imageUrl} alt="Vehicle Preview" className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
 
           {/* Description */}
