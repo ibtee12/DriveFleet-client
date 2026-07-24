@@ -18,7 +18,10 @@ const MyAddedCars = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchUserCars = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const jwtToken = localStorage.getItem('drivefleet-jwt');
 

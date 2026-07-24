@@ -68,7 +68,13 @@ export const AuthProvider = ({ children }) => {
 
   // Observe auth state
   useEffect(() => {
+    // Safety timer to prevent infinite loading spinners
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      clearTimeout(safetyTimer);
       setUser(currentUser);
       
       if (currentUser?.email) {
@@ -81,19 +87,14 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.warn("JWT Endpoint call notice:", error.message);
         }
-      } else {
-        // Check for local demo user session
-        const demoUser = localStorage.getItem('drivefleet-demo-user');
-        if (demoUser) {
-          try {
-            setUser(JSON.parse(demoUser));
-          } catch (err) {}
-        }
       }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      unsubscribe();
+    };
   }, []);
 
   const authInfo = {

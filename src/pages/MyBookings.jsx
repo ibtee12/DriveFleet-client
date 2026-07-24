@@ -15,7 +15,10 @@ const MyBookings = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchBookings = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const jwtToken = localStorage.getItem('drivefleet-jwt');
 
