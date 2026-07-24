@@ -21,6 +21,7 @@ const Navbar = () => {
   const { user, logOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -97,17 +98,24 @@ const Navbar = () => {
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   type="button"
-                  className="flex items-center space-x-3 p-1.5 pl-3 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all focus:outline-none"
+                  className="flex items-center space-x-2.5 p-1.5 pl-3 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all focus:outline-none"
                 >
-                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[120px] truncate">
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-[110px] truncate">
                     {user.displayName || 'Account'}
                   </span>
-                  <img
-                    src={user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'}
-                    alt="User Profile"
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/50"
-                  />
-                  <ChevronDown className="w-4 h-4 text-slate-500 mr-1" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-2 ring-blue-500/50 overflow-hidden shadow-sm">
+                    {user.photoURL && !avatarError ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName || 'User'}
+                        className="w-full h-full object-cover"
+                        onError={() => setAvatarError(true)}
+                      />
+                    ) : (
+                      <User className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-slate-500 mr-1 shrink-0" />
                 </button>
 
                 {/* Profile Dropdown Menu */}
